@@ -7,9 +7,12 @@ import com.nrsgroup.vehicleApp.repository.VehicleRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 
 @Service
 public class VehicleServiceImpl implements VehicleService{
@@ -21,38 +24,50 @@ public class VehicleServiceImpl implements VehicleService{
     }
 
     @Override
-    public Vehicle insertVehicle(Vehicle vehicle) {
-        return vehicleRepository.save(vehicle);
+    @Async
+    public CompletableFuture<Vehicle> insertVehicle(Vehicle vehicle) {
+        return CompletableFuture.completedFuture(vehicleRepository.save(vehicle));
     }
 
     @Override
-    public Vehicle updateVehicle(Vehicle vehicle) {
-        return null;
+    @Async
+    public CompletableFuture<Vehicle> updateVehicle(Vehicle vehicle) {
+        return CompletableFuture.completedFuture(vehicleRepository.save(vehicle));
     }
 
     @Override
+    @Async
     public void deleteVehicle(long id) {
-
+        vehicleRepository.deleteById(id);
     }
 
     @Override
-    public List<Vehicle> findAllVehicle() {
-        return vehicleRepository.findAll();
+    @Async
+    public CompletableFuture<List<Vehicle>> findAllVehicle() {
+        return CompletableFuture.completedFuture(vehicleRepository.findAll());
     }
 
     @Override
-    public Vehicle findVehicleById(long id) {
-        return vehicleRepository.findById(id).orElseThrow(()->new CustomException(Message.VEHICLE_NOT_FOUNT, HttpStatus.BAD_REQUEST));
+    @Async
+    public CompletableFuture<Vehicle> findVehicleById(long id) {
+        Optional<Vehicle> vehicle = vehicleRepository.findById(id);
+        if(vehicle.isPresent()){
+            return CompletableFuture.completedFuture(vehicle.get());
+        }else{
+            throw new CustomException(Message.VEHICLE_NOT_FOUNT, HttpStatus.NOT_FOUND);
+        }
     }
 
     @Override
-    public List<Vehicle> findVehicleByBrand(String brand) {
-        return vehicleRepository.findAllByBrand(brand);
+    @Async
+    public CompletableFuture<List<Vehicle>> findVehicleByBrand(String brand) {
+        return CompletableFuture.completedFuture(vehicleRepository.findAllByBrand(brand));
     }
 
     @Override
-    public List<Vehicle> findVehicleByType(String type) {
-        return vehicleRepository.findAllByType(type);
+    @Async
+    public CompletableFuture<List<Vehicle>> findVehicleByType(String type) {
+        return CompletableFuture.completedFuture(vehicleRepository.findAllByType(type));
     }
 
 }

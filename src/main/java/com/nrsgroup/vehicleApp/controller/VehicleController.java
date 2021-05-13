@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 @RestController
 @RequestMapping("/nrs")
@@ -24,48 +25,54 @@ public class VehicleController {
     }
 
     @PostMapping(value = "/addVehicle", produces = "application/json", consumes = "application/json")
-    public ResponseEntity<Object> addVehicle(@Valid @RequestBody Vehicle vehicle, BindingResult result){
+    public CompletableFuture<ResponseEntity> addVehicle(@Valid @RequestBody Vehicle vehicle, BindingResult result){
         if(!result.hasErrors()){
-            vehicle = vehicleService.insertVehicle(vehicle);
-            return new ResponseEntity<>(vehicle, HttpStatus.OK);
+            return vehicleService.insertVehicle(vehicle).thenApply(ResponseEntity::ok);
         }else{
-            return new ResponseEntity<>(Message.NOT_VALID_JSON, HttpStatus.BAD_REQUEST);
+            return CompletableFuture.completedFuture(ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Message.NOT_VALID_JSON));
         }
     }
 
     @GetMapping(value = "/allVehicle")
-    public ResponseEntity<Object> allVehicle(){
-        List<Vehicle> vehicleList = vehicleService.findAllVehicle();
-        return new ResponseEntity<>(vehicleList, HttpStatus.OK);
+    public CompletableFuture<ResponseEntity> allVehicle(){
+        return vehicleService.findAllVehicle().thenApply(ResponseEntity::ok);
+
     }
 
     @GetMapping(value = "/allVehicle/brand={brand}")
-    public ResponseEntity<Object> allVehicleByBrand(@PathVariable(value = "brand") String brand){
-        List<Vehicle> vehicleList = vehicleService.findVehicleByBrand(brand);
-        return new ResponseEntity<>(vehicleList,HttpStatus.OK);
+    public CompletableFuture<ResponseEntity> allVehicleByBrand(@PathVariable(value = "brand") String brand){
+        return vehicleService.findVehicleByBrand(brand).thenApply(ResponseEntity::ok);
+
     }
 
     @GetMapping(value = "/allVehicle/type={type}")
-    public ResponseEntity<Object> allVehicleByType(@PathVariable(value = "type") String type){
-        List<Vehicle> vehicleList = vehicleService.findVehicleByType(type);
-        return new ResponseEntity<>(vehicleList,HttpStatus.OK);
+    public CompletableFuture<ResponseEntity> allVehicleByType(@PathVariable(value = "type") String type){
+        return vehicleService.findVehicleByType(type).thenApply(ResponseEntity::ok);
     }
 
     @GetMapping(value = "/vehicle/id={id}")
-    public ResponseEntity<Object> VehicleDetail(@PathVariable(value = "id") long id){
-        Vehicle vehicle = vehicleService.findVehicleById(id);
-        return new ResponseEntity<>(vehicle,HttpStatus.OK);
+    public CompletableFuture<ResponseEntity> VehicleDetail(@PathVariable(value = "id") long id){
+        return vehicleService.findVehicleById(id).thenApply(ResponseEntity::ok);
     }
 
     @PutMapping(value = "/updateVehicle/{id}", produces = "application/json", consumes = "application/json")
-    public ResponseEntity<Object> updateVehicle(@PathVariable(value = "id")long id,
+    public CompletableFuture<ResponseEntity> updateVehicle(@PathVariable(value = "id")long id,
                                                 @Valid @RequestBody Vehicle vehicle, BindingResult result){
-        return null;
+        if(!result.hasErrors()){
+            vehicleService.findVehicleById(id).thenAccept(vehicle1 -> vehicle.setId(vehicle1.getId()));
+            System.out.println(vehicle.getId());
+            return vehicleService.updateVehicle(vehicle).thenApply(ResponseEntity::ok);
+
+        }else{
+            return CompletableFuture.completedFuture(ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Message.NOT_VALID_JSON));
+        }
     }
 
     @DeleteMapping(value = "/deleteVehicle/{id}")
     public ResponseEntity<Object> deleteVehicle(@PathVariable(value = "id")long id){
-        return null;
+        vehicleService.findVehicleById(id);
+        vehicleService.deleteVehicle(id);
+        return new ResponseEntity<>(Message.VEHICLE_DELETE, HttpStatus.OK);
     }
 
 }
