@@ -37,8 +37,14 @@ public class VehicleServiceImpl implements VehicleService{
 
     @Override
     @Async
-    public void deleteVehicle(long id) {
-        vehicleRepository.deleteById(id);
+    public CompletableFuture<String> deleteVehicle(long id) {
+        Optional<Vehicle> vehicle = vehicleRepository.findById(id);
+        if(vehicle.isPresent()){
+            vehicleRepository.deleteById(id);
+            return CompletableFuture.completedFuture(Message.VEHICLE_DELETE);
+        }else {
+            throw new CustomException(Message.VEHICLE_NOT_FOUNT, HttpStatus.NOT_FOUND);
+        }
     }
 
     @Override

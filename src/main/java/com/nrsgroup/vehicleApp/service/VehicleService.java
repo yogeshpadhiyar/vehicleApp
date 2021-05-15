@@ -13,7 +13,7 @@ public interface VehicleService {
 
     CompletableFuture<Vehicle> updateVehicle(Vehicle vehicle);
 
-    void  deleteVehicle(long id);
+    CompletableFuture<String>  deleteVehicle(long id);
 
     CompletableFuture<List<Vehicle>> findAllVehicle();
 

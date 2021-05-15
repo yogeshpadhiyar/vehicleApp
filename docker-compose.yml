@@ -1,0 +1,29 @@
+version: '2.1'
+services:
+  docker-mysql:
+    restart: always
+    container_name: docker-mysql
+    image: mysql:5
+    environment:
+      MYSQL_DATABASE: NRSGroupVehicle
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_ROOT_HOST: '%'
+    networks:
+      - vehicle-mysql
+
+  vehicleapp:
+    restart: on-failure
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    expose:
+      - "9090"
+    ports:
+      - 9090:9090
+    depends_on:
+      - docker-mysql
+    networks:
+      - vehicle-mysql
+
+networks:
+  vehicle-mysql:

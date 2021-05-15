@@ -59,7 +59,9 @@ public class VehicleController {
     public CompletableFuture<ResponseEntity> updateVehicle(@PathVariable(value = "id")long id,
                                                 @Valid @RequestBody Vehicle vehicle, BindingResult result){
         if(!result.hasErrors()){
-            vehicleService.findVehicleById(id).thenAccept(vehicle1 -> vehicle.setId(vehicle1.getId()));
+            System.out.println(id);
+            vehicleService.findVehicleById(id);
+            vehicle.setId(id);
             System.out.println(vehicle.getId());
             return vehicleService.updateVehicle(vehicle).thenApply(ResponseEntity::ok);
 
@@ -69,10 +71,8 @@ public class VehicleController {
     }
 
     @DeleteMapping(value = "/deleteVehicle/{id}")
-    public ResponseEntity<Object> deleteVehicle(@PathVariable(value = "id")long id){
-        vehicleService.findVehicleById(id);
-        vehicleService.deleteVehicle(id);
-        return new ResponseEntity<>(Message.VEHICLE_DELETE, HttpStatus.OK);
+    public CompletableFuture<ResponseEntity> deleteVehicle(@PathVariable(value = "id")long id){
+        return vehicleService.deleteVehicle(id).thenApply(ResponseEntity::ok);
     }
 
 }
